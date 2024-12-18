@@ -18,7 +18,7 @@ def run():
     # parse feed
     r = requests.get(search_url)
     soup = bs(r.text, features="html.parser")
-    items_soup = soup.find("div", id="main").find("ol").find_all("li")
+    items_soup = soup.find_all("div", class_="NewsArticle")
     items = [
         {
             "title": item_soup.h4.a.text,
