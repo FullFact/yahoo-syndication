@@ -44,7 +44,7 @@ def run():
 
     # write to file
     with open("data/data.json", "w") as fh:
-        json.dump(unseens + seen, fh, indent=4)
+        json.dump([u["url"] for u in unseens] + seen, fh, indent=4)
 
     # write previously unseen items to slack
     slack_client = WebClient(token=slack_token)
