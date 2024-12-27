@@ -18,7 +18,7 @@ def run():
     # parse feed
     r = requests.get(search_url)
     soup = bs(r.text, features="html.parser")
-    items_soup = soup.find_all("div", class_="NewsArticle")
+    items_soup = soup.find_all("div", class_="NewsArticle")[::-1]
     items = [
         {
             "title": item_soup.h4.a.text,
@@ -29,8 +29,6 @@ def run():
 
         } for item_soup in items_soup
     ]
-    # reverse it, and make URLs unique
-    items = list({i["url"]: i for i in items}.values())[::-1]
 
     # find any unseen items
     unseens = [
