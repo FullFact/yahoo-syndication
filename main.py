@@ -39,9 +39,12 @@ def run():
         if item["url"] not in seen
     ]
 
+    if not unseens:
+        return
+
     # write to file
     with open("data/data.json", "w") as fh:
-        json.dump(unseens + seen, fh)
+        json.dump(unseens + seen, fh, indent=4)
 
     # write previously unseen items to slack
     slack_client = WebClient(token=slack_token)
@@ -54,7 +57,11 @@ def run():
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "<{}|{}>\n{}".format(unseen["url"], unseen["title"], unseen["description"]),
+                        "text": "<{}|{}>\n{}".format(
+                            unseen["url"],
+                            unseen["title"],
+                            unseen["description"]
+                        ),
                     },
                 },
             ]
