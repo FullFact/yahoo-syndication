@@ -13,7 +13,7 @@ search_url = os.environ["SEARCH_URL"]
 def run():
     # read previously seen links from file
     with open("data/data.json") as fh:
-        seen = [x["url"] for x in json.load(fh)]
+        seen = json.load(fh)
 
     # parse feed
     r = requests.get(search_url)
@@ -32,16 +32,16 @@ def run():
     # reverse it, and make URLs unique
     items = list({i["url"]: i for i in items}.values())[::-1]
 
-    # write to file
-    with open("data/data.json", "w") as fh:
-        json.dump(items, fh)
-
     # find any unseen items
     unseens = [
         item
         for item in items
         if item["url"] not in seen
     ]
+
+    # write to file
+    with open("data/data.json", "w") as fh:
+        json.dump(unseens + seen, fh)
 
     # write previously unseen items to slack
     slack_client = WebClient(token=slack_token)
