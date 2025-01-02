@@ -1,11 +1,15 @@
-import os
 import json
-import requests
+import os
+import pathlib
+
 from bs4 import BeautifulSoup as bs
 from slack_sdk import WebClient
+import requests
+
+from .emailer import send_email
 
 
-data_filepath = "data/data.json"
+data_filepath = pathlib.Path(__file__).parent.resolve() / "data" / "data.json"
 
 
 def read_data_file():
@@ -82,6 +86,9 @@ def run():
 
     # send previously unseen articles to slack
     send_articles_to_slack(unseens, slack_token, slack_channel_id)
+
+    # send an email with the recently unseen articles
+    send_email(unseens)
 
 
 if __name__ == "__main__":

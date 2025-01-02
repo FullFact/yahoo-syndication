@@ -28,13 +28,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: data
-          path: data
+          path: yahoo_syndication/data
       - name: Run
-        run: python main.py
+        run: python -m yahoo_syndication.main
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SEARCH_URL: ${{ secrets.SEARCH_URL }}
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          repository: data
+          repository: yahoo_syndication/data
