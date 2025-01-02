@@ -65,7 +65,7 @@ def send_articles_to_slack(articles, slack_token, slack_channel_id):
 def run():
     slack_token = os.environ["SLACK_BOT_TOKEN"]
     slack_channel_id = os.environ["SLACK_CHANNEL_ID"]
-    search_url = os.environ["SEARCH_URL"]
+    search_url = "https://uk.news.search.yahoo.com/search?p=site%3Afullfact.org&ei=UTF-8&fr2=sortBy&context=gsmcontext%3A%3Asort%3A%3Atime&fr=uh3_news_web"
 
     seen = read_data_file()
 
