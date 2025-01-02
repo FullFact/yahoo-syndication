@@ -1,1 +1,3 @@
-# Send syndicated Yahoo content to slack and email
+# Yahoo syndication
+
+Sends syndicated Yahoo content to slack and email.
