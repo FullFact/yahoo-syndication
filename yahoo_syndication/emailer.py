@@ -42,7 +42,7 @@ def generate_body(articles):
 def send_email(articles):
     smtp_server = os.environ["SMTP_SERVER"]
     smtp_port = os.environ["SMTP_PORT"]
-    from_name = os.environ["FROM_NAME"]
+    from_name = "Full Fact"
     from_address = os.environ["FROM_ADDRESS"]
     from_pwd = os.environ["FROM_PWD"]
     to_address = os.environ["TO_ADDRESS"]
