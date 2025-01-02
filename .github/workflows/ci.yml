@@ -1,9 +1,6 @@
 name: Run
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
     - cron: "*/5 * * * *"
