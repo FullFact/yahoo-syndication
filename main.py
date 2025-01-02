@@ -5,21 +5,26 @@ from bs4 import BeautifulSoup as bs
 from slack_sdk import WebClient
 
 
-slack_token = os.environ["SLACK_BOT_TOKEN"]
-slack_channel_id = os.environ["SLACK_CHANNEL_ID"]
-search_url = os.environ["SEARCH_URL"]
+data_filepath = "data/data.json"
 
 
-def run():
+def read_data_file():
     # read previously seen links from file
-    with open("data/data.json") as fh:
+    with open(data_filepath) as fh:
         seen = json.load(fh)
+    return seen
 
-    # parse feed
-    r = requests.get(search_url)
+
+def write_data_file(data):
+    with open(data_filepath, "w") as fh:
+        json.dump(data, fh, indent=4)
+
+
+def parse_feed(url):
+    r = requests.get(url)
     soup = bs(r.text, features="html.parser")
     items_soup = soup.find_all("div", class_="NewsArticle")[::-1]
-    items = [
+    return [
         {
             "title": item_soup.h4.a.text,
             "description": item_soup.p.text,
@@ -30,40 +35,53 @@ def run():
         } for item_soup in items_soup
     ]
 
-    # find any unseen items
-    unseens = [
-        item
-        for item in items
-        if item["url"] not in seen
-    ]
 
-    if not unseens:
-        return
-
-    # write to file
-    with open("data/data.json", "w") as fh:
-        json.dump([u["url"] for u in unseens] + seen, fh, indent=4)
-
-    # write previously unseen items to slack
+def send_articles_to_slack(articles, slack_token, slack_channel_id):
     slack_client = WebClient(token=slack_token)
-    for unseen in unseens:
+    for article in articles:
         slack_client.chat_postMessage(
             channel=slack_channel_id,
-            text="{}: {}".format(unseen["title"], unseen["url"]),
+            text=article["title"],
             blocks=[
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
                         "text": "<{}|{}>\n{}".format(
-                            unseen["url"],
-                            unseen["title"],
-                            unseen["description"]
+                            article["url"],
+                            article["title"],
+                            article["description"]
                         ),
                     },
                 },
             ]
         )
+
+
+def run():
+    slack_token = os.environ["SLACK_BOT_TOKEN"]
+    slack_channel_id = os.environ["SLACK_CHANNEL_ID"]
+    search_url = os.environ["SEARCH_URL"]
+
+    seen = read_data_file()
+
+    feed_articles = parse_feed(search_url)
+
+    # find any unseen articles
+    unseens = [
+        article
+        for article in feed_articles
+        if article["url"] not in seen
+    ]
+
+    if not unseens:
+        # nothing new, so quit
+        return
+
+    write_data_file([u["url"] for u in unseens] + seen)
+
+    # send previously unseen articles to slack
+    send_articles_to_slack(unseens, slack_token, slack_channel_id)
 
 
 if __name__ == "__main__":
