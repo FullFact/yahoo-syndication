@@ -9,18 +9,19 @@ import requests
 from .emailer import send_email
 
 
-data_filepath = pathlib.Path(__file__).parent.resolve() / "data" / "data.json"
+DATA_FILEPATH = pathlib.Path(__file__).parent.resolve() / "data" / "data.json"
+SEARCH_URL = "https://uk.news.search.yahoo.com/search?p=site%3Afullfact.org&ei=UTF-8&fr2=sortBy&context=gsmcontext%3A%3Asort%3A%3Atime&fr=uh3_news_web"
 
 
 def read_data_file():
-    # read previously seen links from file
-    with open(data_filepath) as fh:
+    """read previously seen links from file."""
+    with open(DATA_FILEPATH) as fh:
         seen = json.load(fh)
     return seen
 
 
 def write_data_file(data):
-    with open(data_filepath, "w") as fh:
+    with open(DATA_FILEPATH, "w") as fh:
         json.dump(data, fh, indent=4)
 
 
@@ -65,11 +66,16 @@ def send_articles_to_slack(articles, slack_token, slack_channel_id):
 def run():
     slack_token = os.environ["SLACK_BOT_TOKEN"]
     slack_channel_id = os.environ["SLACK_CHANNEL_ID"]
-    search_url = "https://uk.news.search.yahoo.com/search?p=site%3Afullfact.org&ei=UTF-8&fr2=sortBy&context=gsmcontext%3A%3Asort%3A%3Atime&fr=uh3_news_web"
+
+    from_address = os.environ["FROM_ADDRESS"]
+    from_pwd = os.environ["FROM_PWD"]
+    to_addresses = os.environ["TO_ADDRESSES"]
+    smtp_server = os.environ["SMTP_SERVER"]
+    smtp_port = os.environ["SMTP_PORT"]
 
     seen = read_data_file()
 
-    feed_articles = parse_feed(search_url)
+    feed_articles = parse_feed(SEARCH_URL)
 
     # find any unseen articles
     unseens = [
@@ -88,7 +94,14 @@ def run():
     send_articles_to_slack(unseens, slack_token, slack_channel_id)
 
     # send an email with the recently unseen articles
-    send_email(unseens)
+    send_email(
+        unseens,
+        from_address,
+        from_pwd,
+        to_addresses,
+        smtp_server,
+        smtp_port,
+    )
 
 
 if __name__ == "__main__":

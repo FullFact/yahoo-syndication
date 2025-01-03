@@ -39,32 +39,34 @@ def generate_body(articles):
     )
 
 
-def send_email(articles):
-    smtp_server = os.environ["SMTP_SERVER"]
-    smtp_port = os.environ["SMTP_PORT"]
+def send_email(
+    articles,
+    from_address,
+    from_pwd,
+    to_addresses,
+    smtp_server,
+    smtp_port,
+):
     from_name = "Full Fact"
-    from_address = os.environ["FROM_ADDRESS"]
-    from_pwd = os.environ["FROM_PWD"]
-    to_address = os.environ["TO_ADDRESS"]
 
-    if len(articles) == 1:
-        email_subject = "A Full Fact article was recently syndicated"
-    else:
-        email_subject = "Some Full Fact articles were recently syndicated"
+    email_subject = (
+        "A Full Fact article was recently syndicated"
+        if len(articles) == 1
+        else "Some Full Fact articles were recently syndicated"
+    )
 
-    html = generate_body(articles)
     msg = generate_email(
         email_subject,
         from_name,
         from_address,
-        to_address,
-        html,
+        to_addresses,
+        generate_body(articles),
     )
 
     with smtplib.SMTP_SSL(smtp_server, smtp_port) as s:
         s.login(from_address, from_pwd)
         try:
-            errs = s.sendmail(from_address, [to_address], msg)
+            errs = s.sendmail(from_address, to_addresses.split(","), msg)
             if errs:
                 raise SendingEmailException()
         except smtplib.SMTPException as e:
