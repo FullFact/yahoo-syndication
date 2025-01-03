@@ -32,6 +32,12 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SEARCH_URL: ${{ secrets.SEARCH_URL }}
+          FROM_ADDRESS: ${{ secrets.FROM_ADDRESS }}
+          FROM_PWD: ${{ secrets.FROM_PWD }}
+          TO_ADDRESSES: ${{ secrets.TO_ADDRESSES }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           repository: yahoo_syndication/data
