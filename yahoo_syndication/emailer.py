@@ -1,6 +1,5 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
 import smtplib
 
 
@@ -8,11 +7,11 @@ class SendingEmailException(Exception):
     pass
 
 
-def generate_email(subject, from_name, from_address, to_address, html):
+def generate_email(subject, from_name, from_address, to_addresses, html):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"{from_name} <{from_address}>"
-    msg["To"] = to_address
+    msg["To"] = to_addresses
     msg.attach(MIMEText(html, "html"))
     return msg.as_string()
 
