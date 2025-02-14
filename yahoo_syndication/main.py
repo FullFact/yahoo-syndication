@@ -1,3 +1,5 @@
+import gzip
+from io import BytesIO
 import json
 import os
 import pathlib
@@ -10,7 +12,6 @@ from .emailer import send_email
 
 
 DATA_FILEPATH = pathlib.Path(__file__).parent.resolve() / "data" / "data.json"
-SEARCH_URL = "https://uk.news.search.yahoo.com/search?p=site%3Afullfact.org&ei=UTF-8&fr2=sortBy&context=gsmcontext%3A%3Asort%3A%3Atime&fr=uh3_news_web"
 
 
 def read_data_file():
@@ -25,20 +26,31 @@ def write_data_file(data):
         json.dump(data, fh, indent=4)
 
 
-def parse_feed(url):
-    r = requests.get(url)
-    soup = bs(r.text, features="html.parser")
-    items_soup = soup.find_all("div", class_="NewsArticle")[::-1]
-    return [
-        {
-            "title": item_soup.h4.a.text,
-            "description": item_soup.p.text,
-            "url": item_soup.h4.a["href"],
-            "img_url": item_soup.img["src"],
-            "img_alt": item_soup.img["alt"],
+def get_yahoo_articles():
+    # URL comes from:
+    # https://uk.news.yahoo.com/robots.txt
+    url = (
+        "https://uk.news.yahoo.com/sitemaps/"
+        "news-sitemap_articles_GB_en-GB.xml.gz"
+    )
+    resp = requests.get(url, stream=True)
+    with gzip.open(BytesIO(resp.content), "rb") as fh:
+        content = fh.read()
+    soup = bs(content)
+    return {
+        x.find("news:title").text: x.find("loc").text
+        for x in soup.find_all("url")
+    }
 
-        } for item_soup in items_soup
-    ]
+
+def get_ff_articles():
+    url = os.environ["YAHOO_FEED_URL"]
+    resp = requests.get(url)
+    soup = bs(resp.content)
+    return {
+        x.find("title").text: x.find("description").text
+        for x in soup.find_all("item")
+    }
 
 
 def send_articles_to_slack(articles, slack_token, slack_channel_id):
@@ -55,7 +67,7 @@ def send_articles_to_slack(articles, slack_token, slack_channel_id):
                         "text": "<{}|{}>\n{}".format(
                             article["url"],
                             article["title"],
-                            article["description"]
+                            article["description"],
                         ),
                     },
                 },
@@ -75,13 +87,17 @@ def run():
 
     seen = read_data_file()
 
-    feed_articles = parse_feed(SEARCH_URL)
-
-    # find any unseen articles
+    yahoo_articles = get_yahoo_articles()
+    ff_articles = get_ff_articles()
     unseens = [
-        article
-        for article in feed_articles
-        if article["url"] not in seen
+        {
+            "url": yahoo_articles[title],
+            "title": title,
+            "description": description,
+        }
+        for title, description in ff_articles.items()
+        if title in yahoo_articles
+        and yahoo_articles[title] not in seen
     ]
 
     if not unseens:
