@@ -36,7 +36,7 @@ def get_yahoo_articles():
     resp = requests.get(url, stream=True)
     with gzip.open(BytesIO(resp.content), "rb") as fh:
         content = fh.read()
-    soup = bs(content)
+    soup = bs(content, features="xml")
     return {
         x.find("news:title").text: x.find("loc").text
         for x in soup.find_all("url")
@@ -46,7 +46,7 @@ def get_yahoo_articles():
 def get_ff_articles():
     url = os.environ["YAHOO_FEED_URL"]
     resp = requests.get(url)
-    soup = bs(resp.content)
+    soup = bs(resp.content, features="xml")
     return {
         x.find("title").text: x.find("description").text
         for x in soup.find_all("item")
