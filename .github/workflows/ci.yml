@@ -31,7 +31,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          SEARCH_URL: ${{ secrets.SEARCH_URL }}
+          YAHOO_FEED_URL: ${{ secrets.YAHOO_FEED_URL }}
           FROM_ADDRESS: ${{ secrets.FROM_ADDRESS }}
           FROM_PWD: ${{ secrets.FROM_PWD }}
           TO_ADDRESSES: ${{ secrets.TO_ADDRESSES }}
