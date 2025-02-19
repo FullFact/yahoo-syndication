@@ -37,6 +37,7 @@ jobs:
           TO_ADDRESSES: ${{ secrets.TO_ADDRESSES }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          EMAIL_SENDING_ENABLED: false
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:

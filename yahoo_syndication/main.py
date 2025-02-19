@@ -72,6 +72,7 @@ def run():
     to_addresses = os.environ["TO_ADDRESSES"]
     smtp_server = os.environ["SMTP_SERVER"]
     smtp_port = os.environ["SMTP_PORT"]
+    email_sending_enabled = os.getenv("EMAIL_SENDING_ENABLED", "true") == "true"
 
     seen = read_data_file()
 
@@ -93,15 +94,16 @@ def run():
     # send previously unseen articles to slack
     send_articles_to_slack(unseens, slack_token, slack_channel_id)
 
-    # send an email with the recently unseen articles
-    send_email(
-        unseens,
-        from_address,
-        from_pwd,
-        to_addresses,
-        smtp_server,
-        smtp_port,
-    )
+    if email_sending_enabled:
+        # send an email with the recently unseen articles
+        send_email(
+            unseens,
+            from_address,
+            from_pwd,
+            to_addresses,
+            smtp_server,
+            smtp_port,
+        )
 
 
 if __name__ == "__main__":
